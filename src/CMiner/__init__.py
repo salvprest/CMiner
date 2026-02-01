@@ -1,1 +1,2 @@
-from .CMiner import CMiner, CMinerAPI
+from .CMiner import CMiner
+from .CMinerAPI import CMinerAPI
