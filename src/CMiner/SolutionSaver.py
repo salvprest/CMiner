@@ -162,3 +162,45 @@ class ConsoleSolutionSaver(SolutionSaver):
         No action needed for console saver.
         """
         pass
+
+
+class StringSolutionSaver(SolutionSaver):
+    """
+    Collects solutions into an in-memory string instead of printing or writing to file.
+    Thread-safe: can be used with concurrent workers.
+    """
+
+    def __init__(self, show_mappings: bool = False, show_frequencies: bool = False):
+        super().__init__(show_mappings, show_frequencies)
+        self._parts: list[str] = []
+        self._lock = threading.Lock()
+
+    def patter_to_str(self, pattern: "Pattern") -> str:
+        self.pattern_count += 1
+        output = f"t # {self.pattern_count}\n"
+        output += pattern.__str__()
+        output += f"s {pattern.support()}\n"
+        output += f"f {pattern.frequency()}\n"
+        if self.show_frequencies or self.show_mappings:
+            output += f"\ninfo:\n"
+            output += (
+                f"{pattern.granular_frequencies_str()}\n"
+                if self.show_frequencies and not self.show_mappings
+                else ""
+            )
+            output += f"{pattern.mappings_str()}\n" if self.show_mappings else ""
+        output += "----------\n"
+        return output
+
+    def save(self, pattern: "Pattern"):
+        s = self.patter_to_str(pattern)
+        with self._lock:
+            self._parts.append(s)
+
+    def get_results(self) -> str:
+        """Return all collected pattern strings joined together."""
+        with self._lock:
+            return "".join(self._parts)
+
+    def close(self):
+        pass

@@ -36,8 +36,10 @@ class CMinerAPI:
         with_frequencies=False,  # whether to show frequencies or not in the output
         pattern_type="all",  # type of pattern to mine: 'all' or 'maximum'
         workers: int = 1,  # number of parallel workers
+        string_output: bool = False,  # whether to return results as a string instead of printing
     ):
         self.db_file = db_file
+        self.string_output = string_output
         self.stack = DFSStack(
             min_nodes,
             max_nodes,
@@ -47,6 +49,7 @@ class CMinerAPI:
                 "with_frequencies": with_frequencies,
                 "pattern_type": pattern_type,
                 "output_path": output_path,
+                "string_output": string_output,
             },
         )
         self.min_support = support
@@ -84,6 +87,7 @@ class CMinerAPI:
                 "with_frequencies": self.with_frequencies,
                 "pattern_type": self.pattern_type,
                 "output_path": self.output_path,
+                "string_output": self.string_output,
             },
         )
 
@@ -102,6 +106,7 @@ class CMinerAPI:
                 "with_frequencies": self.with_frequencies,
                 "pattern_type": self.pattern_type,
                 "output_path": self.output_path,
+                "string_output": self.string_output,
             },
         )
 
@@ -137,7 +142,7 @@ class CMinerAPI:
             info_str += f"Output file: {self.output_path}\n"
         return info_str
 
-    def mine(self):
+    def mine(self) -> str | None:
         print(self.get_info())
         print("Reading graphs from file...", end=" ")
         self._read_graphs_from_file()
@@ -160,7 +165,13 @@ class CMinerAPI:
         elapsed_time = end - start
         hours, seconds = divmod(elapsed_time, 3600)
         print(f"Mining completed in {int(hours)} hours and {seconds:.2f} seconds.")
+
+        if self.string_output:
+            result = self.stack.get_string_results()
+            self.stack.close()
+            return result
         self.stack.close()
+        return None
 
     def mine_all_patterns(self):
         with ThreadPoolExecutor(max_workers=self.workers) as executor:

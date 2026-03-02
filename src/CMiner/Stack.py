@@ -1,7 +1,7 @@
 import threading
 
 from .Pattern import Pattern
-from .SolutionSaver import ConsoleSolutionSaver, FileSolutionSaver
+from .SolutionSaver import ConsoleSolutionSaver, FileSolutionSaver, StringSolutionSaver
 
 
 class DFSStack(list):
@@ -29,6 +29,10 @@ class DFSStack(list):
                 output_options["output_path"],
                 output_options["show_mappings"],
                 output_options["with_frequencies"],
+            )
+        elif output_options.get("string_output", False):
+            self.solution_saver = StringSolutionSaver(
+                output_options["show_mappings"], output_options["with_frequencies"]
             )
         else:
             self.solution_saver = ConsoleSolutionSaver(
@@ -104,6 +108,17 @@ class DFSStack(list):
             return
         with self._lock:
             self.solution_saver.save(pattern)
+
+    def get_string_results(self) -> str:
+        """
+        Return the accumulated results string when using StringSolutionSaver.
+        Raises TypeError if the current saver is not a StringSolutionSaver.
+        """
+        if not isinstance(self.solution_saver, StringSolutionSaver):
+            raise TypeError(
+                "get_string_results() is only available when string_output=True."
+            )
+        return self.solution_saver.get_results()
 
     def close(self):
         """
