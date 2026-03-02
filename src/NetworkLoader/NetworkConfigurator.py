@@ -1,7 +1,6 @@
 import os
 import json
-from   os.path import join
-from   pathlib import Path
+from importlib.resources import files
 
 
 class NetworkConfigurator:
@@ -11,9 +10,9 @@ class NetworkConfigurator:
         self.config       = self.configuration_reading()
 
     def configuration_reading(self):
-        root_dir    = Path(os.path.abspath(__file__)).parents[1]
-        config_file = join(root_dir, "../Configurations", "LoadingFiles", self.network_type.lower() + "_conf.json")
-        with open(config_file, 'r') as file:
+        config_filename = self.network_type.lower() + "_conf.json"
+        config_ref = files("NetworkLoader.configs").joinpath(config_filename)
+        with config_ref.open('r') as file:
             config = json.load(file)
             # split path in file_path and file_name
             config["file_path"], config["file_name"] = os.path.split(self.network_path)
