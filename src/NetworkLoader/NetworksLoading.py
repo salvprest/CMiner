@@ -1,3 +1,4 @@
+import os
 import json
 import pandas as pd
 from os import listdir
@@ -215,9 +216,15 @@ class NetworksLoading:
             self._load_data_file(metadata)
         elif file_type == "json":
             # JSON ELABORATION
-            for network_file in listdir(metadata[ND]):
-                net_name = network_file.split(".")[0]
-                js_graph = json.load(open(join(metadata[ND], network_file)))
+            networks_path = join(metadata[FP], metadata[FN])
+            if os.path.isfile(networks_path):
+                net_name = metadata[FN].split(".")[0]
+                js_graph = json.load(open(networks_path))
                 self.Networks[net_name] = json_graph.node_link_graph(js_graph)
+            else:
+                for network_file in listdir(networks_path):
+                    net_name = network_file.split(".")[0]
+                    js_graph = json.load(open(join(networks_path, network_file)))
+                    self.Networks[net_name] = json_graph.node_link_graph(js_graph)
         else:
             print("FILE TYPE NOT SUPPORTED")
